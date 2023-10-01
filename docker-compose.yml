@@ -1,0 +1,128 @@
+version: '3.8'
+services:
+  appseed-app:
+    container_name: appseed_app
+    command: sh -c "python manage.py makemigrations task_manager && python manage.py migrate && python manage.py createsuperuser --noinput --username=admin --email=admin@example.com && python initialize_db.py && gunicorn --config gunicorn-cfg.py core.wsgi"
+    restart: always
+    build: .
+    networks:
+      - db_network
+      - web_network
+    environment:
+      - DB_ENGINE=postgresql
+      - DB_HOST=postgres
+      - DB_NAME=taskManagerApp
+      - DB_USERNAME=rami
+      - SECRET_KEY=django-insecure-^*+1!bk5hq3vjqq7y%9uj#qy(+b_t4^e+2Aqa!593ui9f_!2zly
+      - DB_PORT=5432
+      - ASSETS_ROOT=/static/assets
+      - SERVER=.appseed.us
+      - DEBUG=True
+      - DJANGO_SUPERUSER_PASSWORD=123
+    depends_on:
+      - db
+      - celery
+      - redis
+    links:
+      - db:db
+    ports:
+      - '8000:8000'
+
+  db:
+    image: postgres
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - web_network
+      - db_network
+    ports:
+      - '5432:5432'
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=ramihamadeh2002@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=123
+    ports:
+      - "5050:80"
+
+    networks:
+      - db_network
+
+
+  nginx:
+    container_name: nginx
+    restart: always
+    image: "nginx:latest"
+    ports:
+      - "5085:5085"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - web_network
+    depends_on:
+      - appseed-app
+      - db
+
+  celery:
+    build:
+      context: "."
+      dockerfile: Dockerfile.celery
+    command: celery -A core worker --loglevel=info
+    environment:
+      - PYTHONPATH=/core
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    networks:
+      - web_network
+    links:
+      - redis:redis
+
+  redis:
+    image: redis:latest
+    networks:
+      - web_network
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_HOST=redis
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.mongo
+    environment:
+      - MONGO_DB_HOST=mongo
+      - MONGO_DB_PORT=27017
+      - MONGO_DB_URI=mongodb://root:root@mongo:27017
+      - MONGO_INITDB_DATABASE=admin_activity_db
+#      - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+#      - MONGO_INITDB_ROOT_PASSWORD=secret
+    volumes:
+      - mongodata:/data/db
+#      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - db_network
+    ports:
+      - '27017:27017'
+
+networks:
+  db_network:
+    driver: bridge
+  web_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongodata:

@@ -1,0 +1,15 @@
+# Dockerfile
+FROM postgres:latest
+
+# Set environment variables
+ENV POSTGRES_USER your_user
+ENV POSTGRES_PASSWORD your_password
+ENV POSTGRES_DB your_db_name
+
+# Set the working directory
+WORKDIR /docker-entrypoint-initdb.d
+
+# Copy the init.sql file into the docker container
+COPY ./init.sql /docker-entrypoint-initdb.d/
+
+EXPOSE 5432

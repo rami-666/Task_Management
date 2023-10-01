@@ -1,0 +1,13 @@
+FROM python:3.9
+
+WORKDIR /app
+
+RUN pip install celery[redis] # install celery with redis as the message broker
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY .. .
+
+#CMD ["celery", "-A", "core", "worker", "--loglevel=info"]
+CMD celery -A core worker --loglevel=info --hostname=celery@redis
