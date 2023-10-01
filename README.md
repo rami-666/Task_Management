@@ -14,7 +14,7 @@
 
 > 👉 Go to the project directory
 ```bash
-$ cd django-admin-dashboard-master
+$ cd Task_Management
 ```
 
 > 👉 Build and Run the docker containers
@@ -65,7 +65,8 @@ admin user, or any newly created user with the "superuser status" checked in ord
 
 -Only superusers have the ability to view and manage all tasks
 
-When saving a task, a celery worker (which is run on a different container) should be launched to send an automated email
+When saving a task, a Django Signal detects this creation and launches a celery worker (which is run on a 
+different container) should be launched to send an automated email
 notifying the user of his new task
 
 ![AUTOMATED EMAIL](https://i.ibb.co/hLzgm1J/image.png)
