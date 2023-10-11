@@ -25,7 +25,7 @@ EMAIL_HOST = 'smtp.office365.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'ramihamadehtest@outlook.com'
-EMAIL_HOST_PASSWORD = 'uafuydmvyhajacgk'
+EMAIL_HOST_PASSWORD = 'cgjauwnpogqsztie'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
